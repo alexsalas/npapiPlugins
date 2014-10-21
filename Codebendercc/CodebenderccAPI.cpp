@@ -1007,7 +1007,12 @@ const std::string CodebenderccAPI::setProgrammerCommand(std::map<std::string, st
     }else if (programmerData["communication"] == "serial"){
         command += " -P";
         command += (os == "Windows") ? "\\\\.\\" : "";
-        command += programmerData["device"];
+        #ifndef _WIN32
+            command += "\"" + programmerData["device"]+ "\"";
+        #else
+            command += programmerData["device"];
+        #endif
+
         if (programmerData["speed"] != "0"){
             command += " -b" + programmerData["speed"];
         }
