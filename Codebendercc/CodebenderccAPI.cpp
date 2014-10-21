@@ -762,7 +762,12 @@ std::string CodebenderccAPI::createCommand(const std::string& fdevice,
     command += " -V";
     command += " -P";
     command += (os == "Windows") ? "\\\\.\\" : "";
-    command += fdevice + " -p" + mcu;
+
+    #ifdef _WIN32
+        command += fdevice + " -p" + mcu;
+    #else
+        command += "\"" + fdevice + "\"" + " -p" + mcu;
+    #endif
 
     #ifdef _WIN32
         command += " -u -D -U flash:w:file.bin:r";
