@@ -133,66 +133,59 @@ vector <string> vectorPortsInUseList;
 vector< string >::const_iterator iter;
 boost::mutex mtxPort;
 
+std::map<int, FB::JSAPIWeakPtr> apiMap;
+
+void getJSAPIObjectById(int id) {
+    apiMap.erase(id);
+}
 bool CanBeUsed(string port)
 {
-	if (vectorPortsInUseList.empty())
-		{ 
-		return true;
-		}
-	else
-		{
-			if (std::find(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port) != vectorPortsInUseList.end())
-				{
-				return false;
-				}
-			else    
-				{
-				return true;
-				}
-		 }
+    if (vectorPortsInUseList.empty()){
+        return true;
+    }else{
+        if (std::find(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port) != vectorPortsInUseList.end()){
+            return false;
+        }else{
+            return true;
+        }
+    }
 }
 
 bool AddtoPortList(string port)
 {
-	#ifdef _WIN32
-	if (port.find("\\\\.\\") == string::npos) {
-			port = "\\\\.\\" + port;
-			}	
-	#endif
-	if (vectorPortsInUseList.empty())
-		{ 
-		mtxPort.lock();
-		vectorPortsInUseList.push_back(port);
-		mtxPort.unlock();
-		return true;
-		}
-	else
-		{
-			if (std::find(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port) != vectorPortsInUseList.end())
-				{
-				return false;
-				}
-			else    
-				{
-				mtxPort.lock();
-				vectorPortsInUseList.push_back(port);
-				mtxPort.unlock();
-				return true;
-				}
-		 }
+    #ifdef _WIN32
+        if (port.find("\\\\.\\") == string::npos) {
+            port = "\\\\.\\" + port;
+        }
+    #endif
+    if (vectorPortsInUseList.empty()){
+        mtxPort.lock();
+        vectorPortsInUseList.push_back(port);
+        mtxPort.unlock();
+        return true;
+    }else{
+        if (std::find(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port) != vectorPortsInUseList.end()){
+            return false;
+        }else{
+            mtxPort.lock();
+            vectorPortsInUseList.push_back(port);
+            mtxPort.unlock();
+            return true;
+        }
+    }
 }
 
 void RemovePortFromList(string port)
 {
-	#ifdef _WIN32
-	if (port.find("\\\\.\\") == string::npos) {
-			port = "\\\\.\\" + port;
-			}	
-	#endif
-	mtxPort.lock();
-	if (std::find(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port) != vectorPortsInUseList.end())
-	vectorPortsInUseList.erase(std::remove(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port));
-	mtxPort.unlock();
+    #ifdef _WIN32
+        if (port.find("\\\\.\\") == string::npos) {
+            port = "\\\\.\\" + port;
+        }
+    #endif
+    mtxPort.lock();
+    if (std::find(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port) != vectorPortsInUseList.end())
+        vectorPortsInUseList.erase(std::remove(vectorPortsInUseList.begin(), vectorPortsInUseList.end(), port));
+    mtxPort.unlock();
 }
 
 boost::mutex mtxAvrdudeFlag;

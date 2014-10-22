@@ -8,78 +8,73 @@
 
 std::string CodebenderccAPI::QueryKey(HKEY hKey) try {
 
-    DWORD    cValues;              // number of values for key 
+    DWORD    cValues;              // number of values for key
     DWORD    cchMaxValue;          // longest value name (characters)
     DWORD    cbMaxValueData;       // longest value data (bytes)
     
     DWORD i, retCode; 
  
-    TCHAR	achValue[MAX_KEY_LENGTH]; 
-    DWORD	cchValue = MAX_KEY_LENGTH; 
-	
-	std::string ports = "";
-	
-	// Get the registry key value count. 
-	retCode = CodebenderccAPI::RegQueryInfoKey(
-        hKey,		             // An open registry key handle.
+    TCHAR    achValue[MAX_KEY_LENGTH];
+    DWORD    cchValue = MAX_KEY_LENGTH;
+
+    std::string ports = "";
+
+    // Get the registry key value count.
+    retCode = CodebenderccAPI::RegQueryInfoKey(
+        hKey,                     // An open registry key handle.
         NULL,
         NULL,
         NULL,
         NULL,
-        NULL, 
+        NULL,
         NULL,
         &cValues,                // A pointer to a variable that receives the number of values that are associated with the key.
-        &cchMaxValue,            // A pointer to a variable that receives the size of the key's longest value name, in Unicode characters.  
+        &cchMaxValue,            // A pointer to a variable that receives the size of the key's longest value name, in Unicode characters.
         &cbMaxValueData,         // A pointer to a variable that receives the size of the longest data component among the key's values, in bytes.
-        NULL, 
+        NULL,
         NULL);
- 
-    // Enumerate the key values. 
 
-	BYTE* buffer = new BYTE[cbMaxValueData];
+    // Enumerate the key values.
 
-    if (cValues)				// cValues is the count of values found in the SERIALCOMM subkey
+    BYTE* buffer = new BYTE[cbMaxValueData];
+
+    if (cValues)                // cValues is the count of values found in the SERIALCOMM subkey
     {
-		for (i=0, retCode=ERROR_SUCCESS; i<cValues; i++) 
+        for (i=0, retCode=ERROR_SUCCESS; i<cValues; i++) 
         { 
-			cchValue = MAX_KEY_LENGTH; 
+            cchValue = MAX_KEY_LENGTH;
             achValue[0] = '\0'; 
             retCode = CodebenderccAPI::RegEnumValue(
-				hKey,			// A handle to an open registry key
-				i,				// The index of the value to be retrieved
-                achValue,		// A pointer to a buffer that receives the name of the value as a null-terminated string
-                &cchValue,		// A pointer to a variable that specifies the size of the buffer pointed to by the achValue parameter, in characters.
-                NULL,			// lpReserved parameter is reserved and must be NULL
-                NULL,			
-                NULL,			
-                NULL);			
+                hKey,             // A handle to an open registry key
+                i,                // The index of the value to be retrieved
+                achValue,         // A pointer to a buffer that receives the name of the value as a null-terminated string
+                &cchValue,        // A pointer to a variable that specifies the size of the buffer pointed to by the achValue parameter, in characters.
+                NULL,             // lpReserved parameter is reserved and must be NULL
+                NULL,
+                NULL,
+                NULL);
 
-            if (retCode == ERROR_SUCCESS ) 
+            if (retCode == ERROR_SUCCESS )
             { 
-				DWORD lpData = cbMaxValueData;
-				buffer[0] = '\0';
-				LONG dwRes = CodebenderccAPI::RegQueryValueEx(hKey, achValue, 0, NULL, (LPBYTE)buffer, &lpData);	
-				if (dwRes == ERROR_SUCCESS)
-				{
-					std::string str( reinterpret_cast<char const*>(buffer) , (int) lpData ) ;
-					std::string tmp="";
-					for (int k=0;k<(int)lpData;k++)
-                        {
-							if(buffer[k]!=0)		// Check the buffer for bytes that contain zeros.
-								tmp+=buffer[k];
-	                    }
-					
-					ports.append(tmp);		// Append port to the list of ports.
-					if (i != (cValues - 1))
-						ports.append(",");
-						
-				}
-			} 
+                DWORD lpData = cbMaxValueData;
+                buffer[0] = '\0';
+                LONG dwRes = CodebenderccAPI::RegQueryValueEx(hKey, achValue, 0, NULL, (LPBYTE)buffer, &lpData);
+                if (dwRes == ERROR_SUCCESS)
+                {
+                    std::string str( reinterpret_cast<char const*>(buffer) , (int) lpData );
+                    std::string tmp="";
+                    for (int k=0;k<(int)lpData;k++){
+                        if(buffer[k]!=0)             // Check the buffer for bytes that contain zeros.
+                            tmp+=buffer[k];}
+                    ports.append(tmp);               // Append port to the list of ports.
+                    if (i != (cValues - 1))
+                        ports.append(",");
+                }
+            }
         }
-		
     }
-	delete [] buffer;
-	return ports;
+    delete [] buffer;
+    return ports;
 }catch (...) {
     error_notify("CodebenderccAPI::QueryKey() threw an unknown exception");
     return "";
@@ -87,113 +82,101 @@ std::string CodebenderccAPI::QueryKey(HKEY hKey) try {
 #endif
 
 void CodebenderccAPI::enableDebug(int debugLevel) try{
-	if(debugLevel >= 1 && debugLevel <= 3) {
-		debug_ = true;
-		currentLevel= debugLevel;
-		if (currentLevel==3){
-			if (!(debugFile.is_open())){
-				debugFile.open(debugFilename.c_str());
-									   } 
-
-							}
-		else {
-			if (debugFile.is_open())
-				{			
-					debugFile.close();
-				}
-			 }	
-											}
-	else{
-		if (debugFile.is_open())
-					{			
-						debugFile.close();
-					}
-		m_host->htmlLog("Level set in enableDebug is not valid.");
-		}
+    if(debugLevel >= 1 && debugLevel <= 3) {
+        debug_ = true;
+        currentLevel= debugLevel;
+        if (currentLevel==3){
+            if (!(debugFile.is_open()))
+                debugFile.open(debugFilename.c_str());}
+        else {
+            if (debugFile.is_open())
+                debugFile.close();}
+    }
+    else{
+        if (debugFile.is_open())
+            debugFile.close();
+        m_host->htmlLog("Level set in enableDebug is not valid.");
+        }
 }catch (...) {
     error_notify("CodebenderccAPI::enableDebug() threw an unknown exception");
 }
 
 void CodebenderccAPI::disableDebug() try{
-		debug_ = false;
-		if (currentLevel==3){
-			if (debugFile.is_open())
-				 {			
-					debugFile.close();
-				 }
-							}
+    debug_ = false;
+    if (currentLevel==3){
+        if (debugFile.is_open())
+            debugFile.close();
+    }
 } catch (...) {
     error_notify("CodebenderccAPI::disableDebug() threw an unknown exception");
 }
 
 
 bool CodebenderccAPI::checkDebug() {
-	return debug_;
+    return debug_;
 }
 
 void CodebenderccAPI::debugMessageProbe(const char * messageDebug, int minimumLevel) try {
-	if (CodebenderccAPI::checkDebug() && minimumLevel <= currentLevel && probeFlag==false)	{			
-		probeFlag=true;	
-		m_host->htmlLog(messageDebug);
-		if (currentLevel==3){
-			if (debugFile.is_open())
-				{	
-				 debugFile << messageDebug;
-				 debugFile << "\n";
-				}
-							}
-																		 }
+    if (CodebenderccAPI::checkDebug() && minimumLevel <= currentLevel && probeFlag==false){
+        probeFlag=true;
+        m_host->htmlLog(messageDebug);
+        if (currentLevel==3){
+            if (debugFile.is_open()){
+                debugFile << messageDebug;
+                debugFile << "\n";
+            }
+        }
+    }
 }catch (...) {
     error_notify("CodebenderccAPI::debugMessageProbe() threw an unknown exception");
 }
 
 void CodebenderccAPI::debugMessage(const char * messageDebug, int minimumLevel) try {
-	if (CodebenderccAPI::checkDebug() && minimumLevel <= currentLevel)			
-		m_host->htmlLog(messageDebug); 
-		probeFlag=false;
-		if (currentLevel==3){
-			if (debugFile.is_open())
-				{	
-				 debugFile << messageDebug;
-				 debugFile << "\n";
-				}
-							}
+    if (CodebenderccAPI::checkDebug() && minimumLevel <= currentLevel)
+        m_host->htmlLog(messageDebug);
+        probeFlag=false;
+        if (currentLevel==3){
+            if (debugFile.is_open()){
+                debugFile << messageDebug;
+                debugFile << "\n";
+            }
+        }
 }catch (...) {
     error_notify("CodebenderccAPI::debugMessage() threw an unknown exception");
 }
 
 CodebenderccPtr CodebenderccAPI::getPlugin() {
-	CodebenderccAPI::debugMessage("CodebenderccAPI::getPlugin",3);
-	CodebenderccPtr plugin(m_plugin.lock());
+    CodebenderccAPI::debugMessage("CodebenderccAPI::getPlugin",3);
+    CodebenderccPtr plugin(m_plugin.lock());
     if (!plugin) {
-		CodebenderccAPI::debugMessage("CodebenderccAPI::getPlugin invalid plugin",2);
+        CodebenderccAPI::debugMessage("CodebenderccAPI::getPlugin invalid plugin",2);
         throw FB::script_error("The plugin is invalid");
     }
-	CodebenderccAPI::debugMessage("CodebenderccAPI::getPlugin ended",3);
+    CodebenderccAPI::debugMessage("CodebenderccAPI::getPlugin ended",3);
     return plugin;
 }
 
 // Read-only property version
 
 std::string CodebenderccAPI::get_version() {
-	CodebenderccAPI::debugMessage("CodebenderccAPI::get_version",3);
-	return FBSTRING_PLUGIN_VERSION;
+    CodebenderccAPI::debugMessage("CodebenderccAPI::get_version",3);
+    return FBSTRING_PLUGIN_VERSION;
 }
 
 FB::variant CodebenderccAPI::getLastCommand() {
-	CodebenderccAPI::debugMessage("CodebenderccAPI::getLastCommand",3);
-	return lastcommand;
+    CodebenderccAPI::debugMessage("CodebenderccAPI::getLastCommand",3);
+    return lastcommand;
 }
 
 std::string CodebenderccAPI::getFlashResult() try {
-	CodebenderccAPI::debugMessage("CodebenderccAPI::getFlashResult",3);
-	FILE *pFile;
-	#ifdef _WIN32
-		std::string filename = FB::wstring_to_utf8(outfile);
-		pFile = CodebenderccAPI::fopen(filename.c_str(), "r");
-	#else
-		pFile = CodebenderccAPI::fopen(outfile.c_str(), "r");
-	#endif
+    CodebenderccAPI::debugMessage("CodebenderccAPI::getFlashResult",3);
+    FILE *pFile;
+    #ifdef _WIN32
+        std::string filename = FB::wstring_to_utf8(outfile);
+        pFile = CodebenderccAPI::fopen(filename.c_str(), "r");
+    #else
+        pFile = CodebenderccAPI::fopen(outfile.c_str(), "r");
+    #endif
     char buffer[128];
     std::string result = "";
 
@@ -205,7 +188,7 @@ std::string CodebenderccAPI::getFlashResult() try {
             result += buffer;
     }
     CodebenderccAPI::fclose(pFile);
-	CodebenderccAPI::debugMessage("CodebenderccAPI::getFlashResult ended",3);
+    CodebenderccAPI::debugMessage("CodebenderccAPI::getFlashResult ended",3);
     return result;
 }catch (...) {
     error_notify("CodebenderccAPI::getFlashResult() threw an unknown exception");
@@ -228,7 +211,7 @@ std::string CodebenderccAPI::getFlashResult() try {
  */
 size_t CodebenderccAPI::base64_decode(const char *source, unsigned char *target, size_t targetlen) try {
     
-	char *src, *tmpptr;
+    char *src, *tmpptr;
     char quadruple[4];
     unsigned char tmpresult[3];
     int i;
@@ -286,7 +269,7 @@ size_t CodebenderccAPI::base64_decode(const char *source, unsigned char *target,
  */
 int CodebenderccAPI::_base64_char_value(char base64char) try {
 
-	if (base64char >= 'A' && base64char <= 'Z')
+    if (base64char >= 'A' && base64char <= 'Z')
         return base64char - 'A';
     if (base64char >= 'a' && base64char <= 'z')
         return base64char - 'a' + 26;
@@ -308,11 +291,11 @@ int CodebenderccAPI::_base64_char_value(char base64char) try {
  *
  * @param quadruple the 4 characters that should be decoded
  * @param result the decoded data
- * @return lenth of the result (1, 2 or 3), 0 on failure
+ * @return length of the result (1, 2 or 3), 0 on failure
  */
 int CodebenderccAPI::_base64_decode_triple(char quadruple[4], unsigned char *result) try {
 
-	int i, triple_value, bytes_to_decode = 3, only_equals_yet = 1;
+    int i, triple_value, bytes_to_decode = 3, only_equals_yet = 1;
     int char_value[4];
 
     for (i = 0; i < 4; i++)
@@ -362,66 +345,68 @@ int CodebenderccAPI::_base64_decode_triple(char quadruple[4], unsigned char *res
     return 0;
 }
 
-int CodebenderccAPI::programmerPrefs(const std::string& port, const std::string& programmerProtocol, const std::string&  programmerSpeed, const std::string& programmerCommunication, const std::string& programmerForce, const std::string& programmerDelay, const std::string& mcu, std::map<std::string, std::string>& programmerData) try {
-	
-	CodebenderccAPI::debugMessage("CodebenderccAPI::programmerPrefs",3);
+int CodebenderccAPI::programmerPrefs(const std::string& port,
+                                    const std::string& programmerProtocol,
+                                    const std::string&  programmerSpeed,
+                                    const std::string& programmerCommunication,
+                                    const std::string& programmerForce,
+                                    const std::string& programmerDelay,
+                                    const std::string& mcu, std::map<std::string, std::string>& programmerData) try {
 
-	/**
-	  * Validate the programmer parameters
-	  **/
-	if (!validate_number(programmerSpeed)) return -10;
+    CodebenderccAPI::debugMessage("CodebenderccAPI::programmerPrefs",3);
+
+    /** Validate the programmer parameters. **/
+    if (!validate_number(programmerSpeed)) return -10;
     if (!validate_charnum(programmerProtocol)) return -11;
-	if (!validate_charnum(mcu)) return -12;
-	if (programmerProtocol != "usbtiny" && programmerProtocol != "dapa"){
-		if (!validate_charnum(programmerCommunication)) return -13;
-		if (programmerCommunication == "serial")
-			if (!validate_device(port)) return -14;
-	}
-	if (!validate_charnum(programmerForce)) return -15;
-	if (!validate_number(programmerDelay)) return -16;
+    if (!validate_charnum(mcu)) return -12;
+    if (programmerProtocol != "usbtiny" && programmerProtocol != "dapa"){
+        if (!validate_charnum(programmerCommunication)) return -13;
+        if (programmerCommunication == "serial")
+            if (!validate_device(port)) return -14;
+    }
+    if (!validate_charnum(programmerForce)) return -15;
+    if (!validate_number(programmerDelay)) return -16;
 
-	/**
-	  * Pass the programmer parameters to a map.
-	  **/
-	programmerData["protocol"] = programmerProtocol.c_str();
-	programmerData["communication"] = programmerCommunication.c_str();
-	programmerData["speed"] = programmerSpeed.c_str();
-	programmerData["force"] = programmerForce.c_str();
-	programmerData["delay"] = programmerDelay.c_str();
+    /** Pass the programmer parameters to a map.**/
+    programmerData["protocol"] = programmerProtocol.c_str();
+    programmerData["communication"] = programmerCommunication.c_str();
+    programmerData["speed"] = programmerSpeed.c_str();
+    programmerData["force"] = programmerForce.c_str();
+    programmerData["delay"] = programmerDelay.c_str();
 
-	CodebenderccAPI::debugMessage("CodebenderccAPI::programmerPrefs ended",3);
+    CodebenderccAPI::debugMessage("CodebenderccAPI::programmerPrefs ended",3);
 
-	return 0;
+    return 0;
 }catch (...) {
     error_notify("CodebenderccAPI::programmerPrefs() threw an unknown exception");
     return 0;
 }
 
-int CodebenderccAPI::bootloaderPrefs(const std::string& lFuses, const std::string& hFuses, const std::string& eFuses, const std::string& ulBits, const std::string& lBits, std::map<std::string, std::string>& data) try {
+int CodebenderccAPI::bootloaderPrefs(const std::string& lFuses,
+                                    const std::string& hFuses,
+                                    const std::string& eFuses,
+                                    const std::string& ulBits,
+                                    const std::string& lBits, std::map<std::string, std::string>& data) try {
 
-	CodebenderccAPI::debugMessage("CodebenderccAPI::bootloaderPrefs",3);
+    CodebenderccAPI::debugMessage("CodebenderccAPI::bootloaderPrefs",3);
 
-	/**
-	  * Validate the bootloader parameters
-	  **/
-	if (lFuses == "" || !validate_hex(lFuses)) return -17;
-	if (hFuses == "" || !validate_hex(hFuses)) return -18;
-	if (eFuses != "" && !validate_hex(eFuses)) return -19;
-	if (ulBits != "" && !validate_hex(ulBits)) return -20;
-	if (lBits != "" && !validate_hex(lBits)) return -21;
-	
-	/**
-	  * Pass the programmer parameters to a map.
-	  **/
-	data["hfuses"] = hFuses.c_str();
-	data["lfuses"] = lFuses.c_str();
-	data["efuses"] = eFuses.c_str();
-	data["ulbits"] = ulBits.c_str();
-	data["lbits"] = lBits.c_str();
+    /** Validate the bootloader parameters. **/
+    if (lFuses == "" || !validate_hex(lFuses)) return -17;
+    if (hFuses == "" || !validate_hex(hFuses)) return -18;
+    if (eFuses != "" && !validate_hex(eFuses)) return -19;
+    if (ulBits != "" && !validate_hex(ulBits)) return -20;
+    if (lBits != "" && !validate_hex(lBits)) return -21;
 
-	CodebenderccAPI::debugMessage("CodebenderccAPI::bootloaderPrefs ended",3);
+    /** Pass the programmer parameters to a map. **/
+    data["hfuses"] = hFuses.c_str();
+    data["lfuses"] = lFuses.c_str();
+    data["efuses"] = eFuses.c_str();
+    data["ulbits"] = ulBits.c_str();
+    data["lbits"] = lBits.c_str();
 
-	return 0;
+    CodebenderccAPI::debugMessage("CodebenderccAPI::bootloaderPrefs ended",3);
+
+    return 0;
 }catch (...) {
     error_notify("CodebenderccAPI::bootloaderPrefs() threw an unknown exception");
     return 0;
@@ -429,28 +414,28 @@ int CodebenderccAPI::bootloaderPrefs(const std::string& lFuses, const std::strin
 
 int CodebenderccAPI::flushBuffer(const std::string& port) try {
 
- 	CodebenderccAPI::debugMessage("CodebenderccAPI::flushBuffer",3);
+     CodebenderccAPI::debugMessage("CodebenderccAPI::flushBuffer",3);
     int openPortStatus=CodebenderccAPI::openPort(port, 9600, true, "CodebenderccAPI::flushBuffer - ");
     if(openPortStatus!=1)
-		return openPortStatus;
- 	try{
- 	    serialPort.flushInput();
- 	    serialPort.flushOutput();
+        return openPortStatus;
+     try{
+         serialPort.flushInput();
+         serialPort.flushOutput();
 
         serialPort.setDTR(false);
         serialPort.setRTS(false);
 
- 	    delay(100);
- 	
- 	    serialPort.setDTR(true);
- 	    serialPort.setRTS(true);
+         delay(100);
+
+         serialPort.setDTR(true);
+         serialPort.setRTS(true);
      }
     catch(serial::SerialException& se){
         std::string err_msg = boost::lexical_cast<std::string>(se.what());
         std::string result = "flushBuffer exception: " + err_msg;
         error_notify(result, 1);
         return -1;
-    }           
+    }
     catch(serial::IOException& IOe){  
         std::string err_msg = boost::lexical_cast<std::string>(IOe.what());
         std::string result = "flushBuffer exception: " + err_msg;
@@ -464,14 +449,14 @@ int CodebenderccAPI::flushBuffer(const std::string& port) try {
         return -1;
     }
  
- 	CodebenderccAPI::closePort(true);
- 	
- 	CodebenderccAPI::debugMessage("CodebenderccAPI::flushBuffer ended",3);
- 	
-	return 0;
+     CodebenderccAPI::closePort(true);
+
+     CodebenderccAPI::debugMessage("CodebenderccAPI::flushBuffer ended",3);
+
+    return 0;
  }catch(...) {
- 	error_notify("CodebenderccAPI::flushBuffer() threw an unknown exception");
- 	return -1;
+     error_notify("CodebenderccAPI::flushBuffer() threw an unknown exception");
+     return -1;
  }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -479,9 +464,9 @@ int CodebenderccAPI::flushBuffer(const std::string& port) try {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool CodebenderccAPI::validate_hex(const std::string & input) try {
-  return (input.compare(0, 2, "0x") == 0
-      && input.size() > 2 && input.size() <= 4
-      && input.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos);
+    return (input.compare(0, 2, "0x") == 0
+    && input.size() > 2 && input.size() <= 4
+    && input.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos);
 }catch (...) {
     error_notify("CodebenderccAPI::validate_hex() threw an unknown exception");
     return false;
@@ -489,7 +474,7 @@ bool CodebenderccAPI::validate_hex(const std::string & input) try {
 
 bool CodebenderccAPI::validate_number(const std::string & input) try {
 
-	try {
+    try {
         boost::lexical_cast<double>(input);
         return true;
     } catch (boost::bad_lexical_cast &) {
@@ -502,17 +487,17 @@ bool CodebenderccAPI::validate_number(const std::string & input) try {
 }
 
 bool CodebenderccAPI::validate_device(const std::string & input) try {
-	
-	static const boost::regex acm("\\/dev\\/ttyACM[[:digit:]]+");
+
+    static const boost::regex acm("\\/dev\\/ttyACM[[:digit:]]+");
     static const boost::regex usb("\\/dev\\/ttyUSB[[:digit:]]+");
     static const boost::regex com("COM[[:digit:]]+");
-    static const boost::regex cu("\\/dev\\/cu.[0-9a-zA-Z\\-]+");
+    static const boost::regex cu("\\/dev\\/cu.[0-9a-zA-Z\\-\\s(=>_)]+");
 
     return boost::regex_match(input, acm)
-            || boost::regex_match(input, usb)
-            || boost::regex_match(input, com)
-            || boost::regex_match(input, cu)
-            ;
+        || boost::regex_match(input, usb)
+        || boost::regex_match(input, com)
+        || boost::regex_match(input, cu)
+        ;
 }catch (...) {
     error_notify("CodebenderccAPI::validate_device() threw an unknown exception");
     return false;
@@ -520,7 +505,7 @@ bool CodebenderccAPI::validate_device(const std::string & input) try {
 
 bool CodebenderccAPI::validate_code(const std::string & input) try {
 
-	static const boost::regex base64("[0-9a-zA-Z+\\/=\n]+");
+    static const boost::regex base64("[0-9a-zA-Z+\\/=\n]+");
 
     return boost::regex_match(input, base64);
 }catch (...) {
@@ -530,7 +515,7 @@ bool CodebenderccAPI::validate_code(const std::string & input) try {
 
 bool CodebenderccAPI::validate_charnum(const std::string & input) try {
 
-	static const boost::regex charnum("[0-9a-zA-Z]*");
+    static const boost::regex charnum("[0-9a-zA-Z]*");
     return boost::regex_match(input, charnum);
 }catch (...) {
     error_notify("CodebenderccAPI::validate_charnum() threw an unknown exception");
