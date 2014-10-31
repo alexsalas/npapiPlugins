@@ -47,7 +47,8 @@ add_windows_plugin(${PROJECT_NAME} SOURCES)
 # add library dependencies here; leave ${PLUGIN_INTERNAL_DEPS} there unless you know what you're doing!
 target_link_libraries(${PROJECT_NAME}
     ${PLUGIN_INTERNAL_DEPS}
-	"C:/Program Files/Microsoft SDKs/Windows/v7.1/Lib/iepmapi.lib"
+    "C:/Program Files/Microsoft SDKs/Windows/v6.0A/Lib/iepmapi.lib"
+    Setupapi.lib
     )
 
 set(WIX_HEAT_FLAGS

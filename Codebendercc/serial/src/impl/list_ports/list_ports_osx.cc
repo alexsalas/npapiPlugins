@@ -1,3 +1,5 @@
+#if defined(__APPLE__)
+
 #include <sys/param.h>
 #include <stdint.h>
 
@@ -10,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "serial/serial.h"
+#include "../../../include/serial/serial.h"
 
 using serial::PortInfo;
 using std::string;
@@ -279,3 +281,5 @@ serial::list_ports(void)
 
     return devices_found;
 }
+
+#endif // defined(__APPLE__)

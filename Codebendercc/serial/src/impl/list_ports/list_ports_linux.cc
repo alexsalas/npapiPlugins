@@ -1,3 +1,5 @@
+#if defined(__linux__)
+
 /*
  * Copyright (c) 2014 Craig Lilley <cralilley@gmail.com>
  * This software is made available under the terms of the MIT licence.
@@ -20,7 +22,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "serial/serial.h"
+#include "../../../include/serial/serial.h"
 
 using serial::PortInfo;
 using std::istringstream;
@@ -299,10 +301,10 @@ serial::list_ports()
 
     vector<string> search_globs;
     search_globs.push_back("/dev/ttyACM*");
-    search_globs.push_back("/dev/ttyS*");
+   // search_globs.push_back("/dev/ttyS*");
     search_globs.push_back("/dev/ttyUSB*");
-    search_globs.push_back("/dev/tty.*");
-    search_globs.push_back("/dev/cu.*");
+   // search_globs.push_back("/dev/tty.*");
+   // search_globs.push_back("/dev/cu.*");
 
     vector<string> devices_found = glob( search_globs );
 
@@ -329,3 +331,5 @@ serial::list_ports()
 
     return results;
 }
+
+#endif // defined(__linux__)
