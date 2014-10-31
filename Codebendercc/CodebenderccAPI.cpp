@@ -1303,9 +1303,26 @@ void CodebenderccAPI::serialReader(const std::string &port,
             CodebenderccAPI::serialMonitorSetStatus();
             CodebenderccAPI::disconnect();
         }        
-    }catch (...) {
-        CodebenderccAPI::debugMessage("CodebenderccAPI::serialReader loop interrupted",1);
-         error_notify("CodebenderccAPI::serialReader loop interrupted", 1);
+    }catch (serial::PortNotOpenedException& pno) {
+        CodebenderccAPI::debugMessage(pno.what(),1);
+        std::string err_mess = boost::lexical_cast<std::string>(pno.what());
+        error_notify(pno.what(), 1);
+        notify("disconnect");
+        CodebenderccAPI::serialMonitorSetStatus();
+        CodebenderccAPI::disconnect();
+    }
+    catch(serial::SerialException& se){
+        CodebenderccAPI::debugMessage(se.what(),2);
+        std::string err_mess = boost::lexical_cast<std::string>(se.what());
+        error_notify(se.what(), 1);
+        notify("disconnect");
+        CodebenderccAPI::serialMonitorSetStatus();
+        CodebenderccAPI::disconnect();
+    }
+    catch(serial::IOException& IOe){
+        CodebenderccAPI::debugMessage(IOe.what(),2);
+        std::string err_mess = boost::lexical_cast<std::string>(IOe.what());
+        error_notify(IOe.what(), 1);
         notify("disconnect");
         CodebenderccAPI::serialMonitorSetStatus();
         CodebenderccAPI::disconnect();
