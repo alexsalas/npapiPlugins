@@ -237,8 +237,7 @@ FB::variant CodebenderccAPI::disconnect() try {
 
 bool CodebenderccAPI::serialRead(const std::string &port,
                                 const std::string &baudrate,
-                                const FB::JSObjectPtr
-                                &callback,
+                                const FB::JSObjectPtr &callback,
                                 const FB::JSObjectPtr &valHandCallback) try {
     CodebenderccAPI::debugMessage("CodebenderccAPI::serialRead",3);
     std::string message = "connecting at ";
