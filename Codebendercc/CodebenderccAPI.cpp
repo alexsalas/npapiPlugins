@@ -1726,7 +1726,7 @@ CodebenderccAPI::fopen(const char *path, const char *mode)
             break;
 
         default:
-            err_msg += "Unknown error!";
+            err_msg += "function failed with errno: " + boost::lexical_cast<std::string>(errno) + " - " + boost::lexical_cast<std::string>(strerror(errno));
     }
 
     error_notify(err_msg);
@@ -1769,10 +1769,13 @@ CodebenderccAPI::fwrite(const void *ptr,
     clearerr(stream);
 
     n = ::fwrite(ptr, size, nmemb, stream);
+
     if (n == nmemb)
         return n;
 
-    err_msg += (ferror(stream) != 0) ? "errno set" : "bad I/O";
+    err_msg += (ferror(stream) != 0) ? "function failed with errno: " + boost::lexical_cast<std::string>(errno) + " - " + boost::lexical_cast<std::string>(strerror(errno)
+) : "bad I/O";
+
     error_notify(err_msg);
     return n;
 }
@@ -1808,7 +1811,7 @@ CodebenderccAPI::fclose(FILE *fp)
             break;
 
         default:
-            err_msg += "Unknown error!";
+            err_msg += "function failed with errno: " + boost::lexical_cast<std::string>(errno) + " - " + boost::lexical_cast<std::string>(strerror(errno));
     }
 
     error_notify(err_msg);
