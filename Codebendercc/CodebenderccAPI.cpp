@@ -45,26 +45,29 @@ int CodebenderccAPI::connect(const std::string &port,
             }
         }catch(serial::PortNotOpenedException& pno){
             CodebenderccAPI::debugMessage(pno.what(),2);
-            error_notify(pno.what());
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(pno.what());
+            error_notify(result);
             int return_value= CodebenderccAPI::PortNotOpenedException(pno.what());
             return return_value;
         }
         catch(serial::SerialException& se){
             CodebenderccAPI::debugMessage(se.what(),2);
-            error_notify(se.what());
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(se.what());
+            error_notify(result);
             int return_value= CodebenderccAPI::SerialException(se.what());
             return return_value;
         }
         catch(std::invalid_argument& inv_arg){
             CodebenderccAPI::debugMessage(inv_arg.what(),2);
-            error_notify(inv_arg.what());
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(inv_arg.what());
+            error_notify(result);
             int return_value= CodebenderccAPI::invalid_argument(inv_arg.what());
             return return_value;
         }
         catch(serial::IOException& IOe){
             CodebenderccAPI::debugMessage(IOe.what(),2);
-            error_notify(IOe.what());
-            std::string result = boost::lexical_cast<std::string>(IOe.what());
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(IOe.what());
+            error_notify(result);
             #ifndef _WIN32
                 if (result.find("IO Exception (16)")!=std::string::npos)
                     return -55;
@@ -1391,21 +1394,24 @@ void CodebenderccAPI::serialReader(const std::string &port,
         }        
     }catch (serial::PortNotOpenedException& pno) {
         CodebenderccAPI::debugMessage(pno.what(),1);
-        error_notify(pno.what(), 1);
+        std::string result = "CodebenderccAPI::serialReader - " + boost::lexical_cast<std::string>(pno.what(), 1);
+        error_notify(result);
         notify("disconnect");
         CodebenderccAPI::serialMonitorSetStatus();
         CodebenderccAPI::disconnect(port);
     }
     catch(serial::SerialException& se){
         CodebenderccAPI::debugMessage(se.what(),2);
-        error_notify(se.what(), 1);
+        std::string result = "CodebenderccAPI::serialReader - " + boost::lexical_cast<std::string>(se.what(), 1);
+        error_notify(result);
         notify("disconnect");
         CodebenderccAPI::serialMonitorSetStatus();
         CodebenderccAPI::disconnect(port);
     }
     catch(serial::IOException& IOe){
         CodebenderccAPI::debugMessage(IOe.what(),2);
-        error_notify(IOe.what(), 1);
+        std::string result = "CodebenderccAPI::serialReader - " + boost::lexical_cast<std::string>(IOe.what(), 1);
+        error_notify(result);
         notify("disconnect");
         CodebenderccAPI::serialMonitorSetStatus();
         CodebenderccAPI::disconnect(port);
