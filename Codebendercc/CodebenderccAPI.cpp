@@ -561,6 +561,7 @@ void CodebenderccAPI::doflash(const std::string& device,
     if(isAvrdudeRunning){
         CodebenderccAPI::Invoke(flash_callback, -23);
         mtxAvrdudeFlag.unlock();
+        _retVal = -23;
         return;}
     isAvrdudeRunning=true;
     mtxAvrdudeFlag.unlock();
@@ -586,6 +587,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                     if (LeonardoPortStatus!=1){
                         CodebenderccAPI::Invoke(flash_callback, LeonardoPortStatus);
                         isAvrdudeRunning=false;
+                        _retVal = LeonardoPortStatus;
                         return;
                     }
                     AddtoPortList(fdevice);
@@ -604,6 +606,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                         RemovePortFromList(fdevice);
                         isAvrdudeRunning=false;
                         CodebenderccAPI::Invoke(flash_callback, flushBufferRetVal);
+                        _retVal = flushBufferRetVal;
                         return;
                     }
                 }
@@ -617,6 +620,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                     CodebenderccAPI::Invoke(flash_callback, -100);
                     RemovePortFromList(fdevice);
                     isAvrdudeRunning=false;
+                    _retVal = -100;
                     return;
                 }
 
@@ -628,6 +632,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                 if (retVal==THREAD_INTERRUPTED){
                     RemovePortFromList(fdevice);
                     isAvrdudeRunning=false;
+                    _retVal = retVal;
                     return;
                 }
 
@@ -658,11 +663,13 @@ void CodebenderccAPI::doflash(const std::string& device,
             RemovePortFromList(fdevice);
             isAvrdudeRunning=false;
             CodebenderccAPI::Invoke(flash_callback, 9001);
+            _retVal = 9001;
         }
     }else{
         CodebenderccAPI::debugMessage("Port is in use, choose another port",3);
         isAvrdudeRunning=false;
         CodebenderccAPI::Invoke(flash_callback, -22);
+        _retVal = -22;
     }
 
     CodebenderccAPI::debugMessage("CodebenderccAPI::doflash ended",3);
@@ -672,6 +679,7 @@ void CodebenderccAPI::doflash(const std::string& device,
     RemovePortFromList(device);
     isAvrdudeRunning=false;
     CodebenderccAPI::Invoke(flash_callback, 9002);
+    _retVal = 9002;
 }
 
 int CodebenderccAPI::resetLeonardo(std::string& fdevice)try {
