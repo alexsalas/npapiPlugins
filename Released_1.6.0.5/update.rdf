@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:NC="http://home.netscape.com/NC-rdf#"
+         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Description RDF:about="rdf:#$4gXla1"
+                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                   em:minVersion="3.6"
+                   em:maxVersion="*"
+                   em:updateLink="http://codebender.cc/codebender.xpi"
+                   em:updateInfoURL="http://codebender.cc/updateinfo.xhtml" />
+  <RDF:Description RDF:about="urn:mozilla:extension:codebender@codebender.cc"
+                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAKwLS0T4ig0xwuo8hUQCt+ik1vrkcLqwnjHAKiQYpjvcmnwSwW4HYQnHMnQHBm6Zq3ig2THTF7pOARPt4UNbNRpJqiyv/hSlYaOd+ODYK/4gO9xY1C0muwpy2KKaKgrYoN9sQXKEQgwsFqeZae1eDnEGmpZaAfTMTppVmH1hbeLl">
+    <em:updates RDF:resource="rdf:#$0gXla1"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="rdf:#$1gXla1"
+                   em:version="1.6.0.5">
+    <em:targetApplication RDF:resource="rdf:#$4gXla1"/>
+  </RDF:Description>
+  <RDF:Seq RDF:about="rdf:#$0gXla1">
+    <RDF:li RDF:resource="rdf:#$1gXla1"/>
+    <RDF:li RDF:resource="rdf:#$agXla1"/>
+  </RDF:Seq>
+  <RDF:Description RDF:about="rdf:#$agXla1"
+                   em:version="1.6.0.5">
+    <em:targetApplication RDF:resource="rdf:#$dgXla1"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="rdf:#$dgXla1"
+                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                   em:minVersion="3.6"
+                   em:maxVersion="*"
+                   em:updateLink="http://codebender.cc/codebender.xpi"
+                   em:updateHash="sha256:5c9820850173dc1940a36a5eb7d0f9bb3a0b5f5c9c6307f5be988ea513f0c70b" />
+</RDF:RDF>
