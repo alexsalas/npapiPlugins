@@ -16,6 +16,89 @@ FB::variant CodebenderccAPI::download() {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////public//////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+int CodebenderccAPI::connect(const std::string &port,
+                             const unsigned int &baudrate) try {
+
+    CodebenderccAPI::debugMessage("CodebenderccAPI::connect",3);
+
+    std::string device;
+    device = port;
+    #ifdef _WIN32
+        device = "\\\\.\\" + port;
+    #endif
+
+    if(AddtoPortList(device)){                               //Check if device is used by someone else
+        try{
+            if (serialPort.isOpen() == false){
+                uint32_t TotalTimeoutConstantDivider = ((baudrate/9)/100 == 0)? 1 : (baudrate/9)/100;
+                uint32_t readTotalTimeoutConst = 1000/TotalTimeoutConstantDivider;
+                portTimeout = Timeout(10, readTotalTimeoutConst, 0, 0, 10);
+                serialPort.setPort(device);                  //set port name
+                serialPort.setBaudrate(baudrate);            //set port baudrate
+                serialPort.setTimeout(portTimeout);          //set the read/write timeout of the port
+                serialPort.open();                           //open the port
+                serialPort.setDTR(true);                     //set Data Transfer signal, needed for Arduino leonardo
+                serialPort.setRTS(false);                    //set Request to Send signal to false, needed for Arduino leonardo
+            }
+            else{
+
+            }
+        }catch(serial::PortNotOpenedException& pno){
+            CodebenderccAPI::debugMessage(pno.what(),2);
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(pno.what());
+            error_notify(result);
+            int return_value= CodebenderccAPI::PortNotOpenedException(pno.what());
+            return return_value;
+        }
+        catch(serial::SerialException& se){
+            CodebenderccAPI::debugMessage(se.what(),2);
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(se.what());
+            error_notify(result);
+            int return_value= CodebenderccAPI::SerialException(se.what());
+            return return_value;
+        }
+        catch(std::invalid_argument& inv_arg){
+            CodebenderccAPI::debugMessage(inv_arg.what(),2);
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(inv_arg.what());
+            error_notify(result);
+            int return_value= CodebenderccAPI::invalid_argument(inv_arg.what());
+            return return_value;
+        }
+        catch(serial::IOException& IOe){
+            CodebenderccAPI::debugMessage(IOe.what(),2);
+            std::string result = "CodebenderccAPI::connect - " + boost::lexical_cast<std::string>(IOe.what());
+            error_notify(result);
+            #ifndef _WIN32
+                if (result.find("IO Exception (16)")!=std::string::npos)
+                    return -55;
+                else if (result.find("IO Exception (13)")!=std::string::npos)
+                    return -56;
+                else if (result.find("IO Exception (2)")!=std::string::npos)
+                    return -57;
+                else{
+                    int return_value= CodebenderccAPI::IOException(IOe.what());
+                    return return_value;}
+            #endif
+            #ifdef _WIN32
+                if (result.find("Can't open device,")!=std::string::npos)
+                    return -56;
+                else if (result.find("Specified port,")!=std::string::npos)
+                    return -57;
+                else{
+                    int return_value= CodebenderccAPI::IOException(IOe.what());
+                return return_value;}
+                #endif
+        }
+    }else{
+        CodebenderccAPI::debugMessage("CodebenderccAPI::Port is already in use.",3);
+        return -22;
+    }
+    CodebenderccAPI::debugMessage("CodebenderccAPI::connect ended",3);
+    return 1;
+} catch (...) {
+    error_notify("CodebenderccAPI::connect() threw an unknown exception");
+    return -54;
+}
 
 int CodebenderccAPI::openPort(const std::string &port,
                               const unsigned int &baudrate,
@@ -478,6 +561,7 @@ void CodebenderccAPI::doflash(const std::string& device,
     if(isAvrdudeRunning){
         CodebenderccAPI::Invoke(flash_callback, -23);
         mtxAvrdudeFlag.unlock();
+        _retVal = -23;
         return;}
     isAvrdudeRunning=true;
     mtxAvrdudeFlag.unlock();
@@ -503,6 +587,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                     if (LeonardoPortStatus!=1){
                         CodebenderccAPI::Invoke(flash_callback, LeonardoPortStatus);
                         isAvrdudeRunning=false;
+                        _retVal = LeonardoPortStatus;
                         return;
                     }
                     AddtoPortList(fdevice);
@@ -521,6 +606,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                         RemovePortFromList(fdevice);
                         isAvrdudeRunning=false;
                         CodebenderccAPI::Invoke(flash_callback, flushBufferRetVal);
+                        _retVal = flushBufferRetVal;
                         return;
                     }
                 }
@@ -534,6 +620,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                     CodebenderccAPI::Invoke(flash_callback, -100);
                     RemovePortFromList(fdevice);
                     isAvrdudeRunning=false;
+                    _retVal = -100;
                     return;
                 }
 
@@ -545,6 +632,7 @@ void CodebenderccAPI::doflash(const std::string& device,
                 if (retVal==THREAD_INTERRUPTED){
                     RemovePortFromList(fdevice);
                     isAvrdudeRunning=false;
+                    _retVal = retVal;
                     return;
                 }
 
@@ -575,11 +663,13 @@ void CodebenderccAPI::doflash(const std::string& device,
             RemovePortFromList(fdevice);
             isAvrdudeRunning=false;
             CodebenderccAPI::Invoke(flash_callback, 9001);
+            _retVal = 9001;
         }
     }else{
         CodebenderccAPI::debugMessage("Port is in use, choose another port",3);
         isAvrdudeRunning=false;
         CodebenderccAPI::Invoke(flash_callback, -22);
+        _retVal = -22;
     }
 
     CodebenderccAPI::debugMessage("CodebenderccAPI::doflash ended",3);
@@ -589,6 +679,7 @@ void CodebenderccAPI::doflash(const std::string& device,
     RemovePortFromList(device);
     isAvrdudeRunning=false;
     CodebenderccAPI::Invoke(flash_callback, 9002);
+    _retVal = 9002;
 }
 
 int CodebenderccAPI::resetLeonardo(std::string& fdevice)try {
@@ -1261,12 +1352,18 @@ void CodebenderccAPI::serialReader(const std::string &port,
                                    const FB::JSObjectPtr & valHandCallback) try {
     CodebenderccAPI::debugMessage("CodebenderccAPI::serialReader",3);
     
-    int openPortStatus=CodebenderccAPI::openPort(port, baudrate, false, "CodebenderccAPI::serialReader - ");
+    int connectStatus=CodebenderccAPI::connect(port, baudrate);
 
-    if(openPortStatus!=1){
-        CodebenderccAPI::Invoke(valHandCallback, openPortStatus);
+    if (connectStatus == -22){
+        CodebenderccAPI::Invoke(valHandCallback, connectStatus);
         notify("disconnect");
-        CodebenderccAPI::disconnect();
+        return;
+    }
+
+    if(connectStatus!=1){
+        CodebenderccAPI::Invoke(valHandCallback, connectStatus);
+        notify("disconnect");
+        CodebenderccAPI::disconnect(port);
         return;
     }
 
@@ -1301,22 +1398,39 @@ void CodebenderccAPI::serialReader(const std::string &port,
             }
         }catch(boost::thread_interrupted&){
             CodebenderccAPI::serialMonitorSetStatus();
-            CodebenderccAPI::disconnect();
+            CodebenderccAPI::disconnect(port);
         }        
-    }catch (...) {
-        CodebenderccAPI::debugMessage("CodebenderccAPI::serialReader loop interrupted",1);
-         error_notify("CodebenderccAPI::serialReader loop interrupted", 1);
+    }catch (serial::PortNotOpenedException& pno) {
+        CodebenderccAPI::debugMessage(pno.what(),1);
+        std::string result = "CodebenderccAPI::serialReader - " + boost::lexical_cast<std::string>(pno.what());
+        error_notify(result, 1);
         notify("disconnect");
         CodebenderccAPI::serialMonitorSetStatus();
-        CodebenderccAPI::disconnect();
+        CodebenderccAPI::disconnect(port);
     }
-    CodebenderccAPI::disconnect();
+    catch(serial::SerialException& se){
+        CodebenderccAPI::debugMessage(se.what(),2);
+        std::string result = "CodebenderccAPI::serialReader - " + boost::lexical_cast<std::string>(se.what());
+        error_notify(result, 1);
+        notify("disconnect");
+        CodebenderccAPI::serialMonitorSetStatus();
+        CodebenderccAPI::disconnect(port);
+    }
+    catch(serial::IOException& IOe){
+        CodebenderccAPI::debugMessage(IOe.what(),2);
+        std::string result = "CodebenderccAPI::serialReader - " + boost::lexical_cast<std::string>(IOe.what());
+        error_notify(result, 1);
+        notify("disconnect");
+        CodebenderccAPI::serialMonitorSetStatus();
+        CodebenderccAPI::disconnect(port);
+    }
+    CodebenderccAPI::disconnect(port);
     CodebenderccAPI::debugMessage("CodebenderccAPI::serialReader ended",3);
 } catch (...) {
     error_notify("CodebenderccAPI::serialReader() threw an unknown exception");
     notify("disconnect");
     CodebenderccAPI::serialMonitorSetStatus();
-    CodebenderccAPI::disconnect();
+    CodebenderccAPI::disconnect(port);
 }
 
 void CodebenderccAPI::serialMonitorSetStatus(){
@@ -1626,7 +1740,7 @@ CodebenderccAPI::fopen(const char *path, const char *mode)
             break;
 
         default:
-            err_msg += "Unknown error!";
+            err_msg += "function failed with errno: " + boost::lexical_cast<std::string>(errno) + " - " + boost::lexical_cast<std::string>(strerror(errno));
     }
 
     error_notify(err_msg);
@@ -1669,10 +1783,13 @@ CodebenderccAPI::fwrite(const void *ptr,
     clearerr(stream);
 
     n = ::fwrite(ptr, size, nmemb, stream);
+
     if (n == nmemb)
         return n;
 
-    err_msg += (ferror(stream) != 0) ? "errno set" : "bad I/O";
+    err_msg += (ferror(stream) != 0) ? "function failed with errno: " + boost::lexical_cast<std::string>(errno) + " - " + boost::lexical_cast<std::string>(strerror(errno)
+) : "bad I/O";
+
     error_notify(err_msg);
     return n;
 }
@@ -1708,7 +1825,7 @@ CodebenderccAPI::fclose(FILE *fp)
             break;
 
         default:
-            err_msg += "Unknown error!";
+            err_msg += "function failed with errno: " + boost::lexical_cast<std::string>(errno) + " - " + boost::lexical_cast<std::string>(strerror(errno));
     }
 
     error_notify(err_msg);

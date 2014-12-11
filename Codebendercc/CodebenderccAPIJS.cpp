@@ -182,10 +182,12 @@ bool CodebenderccAPI::setErrorCallback(const FB::JSObjectPtr &error_callback) tr
     return true;
 }
 
-void CodebenderccAPI::serialWrite(const std::string & message) try {
+void CodebenderccAPI::serialWrite(const std::string & message, const std::string &port) try {
+
     CodebenderccAPI::debugMessage("CodebenderccAPI::serialWrite",3);
     std::string mess = message;
     size_t bytes_read;
+
     if(serialPort.isOpen()){
         try{
             bytes_read = serialPort.write(mess);
@@ -194,21 +196,24 @@ void CodebenderccAPI::serialWrite(const std::string & message) try {
                 CodebenderccAPI::debugMessage(portMessage.c_str(),1);}
         }catch(serial::PortNotOpenedException& pno){
             CodebenderccAPI::debugMessage(pno.what(),2);
-            error_notify(pno.what());
+            std::string result = "CodebenderccAPI::serialWrite - " + boost::lexical_cast<std::string>(pno.what());
+            error_notify(result);
             notify("disconnect");
-            CodebenderccAPI::disconnect();
+            CodebenderccAPI::disconnect(port);
             return;}
         catch(serial::SerialException& se){
             CodebenderccAPI::debugMessage(se.what(),2);
-            error_notify(se.what());
+            std::string result = "CodebenderccAPI::serialWrite - " + boost::lexical_cast<std::string>(se.what());
+            error_notify(result);
             notify("disconnect");
-            CodebenderccAPI::disconnect();
+            CodebenderccAPI::disconnect(port);
             return;}
         catch(serial::IOException& IOe){
             CodebenderccAPI::debugMessage(IOe.what(),2);
-            error_notify(IOe.what());
+            std::string result = "CodebenderccAPI::serialWrite - " + boost::lexical_cast<std::string>(IOe.what());
+            error_notify(result);
             notify("disconnect");
-            CodebenderccAPI::disconnect();
+            CodebenderccAPI::disconnect(port);
             return;}
     }else {
         CodebenderccAPI::debugMessage("CodebenderccAPI::serialWrite port not open",1);
@@ -216,29 +221,43 @@ void CodebenderccAPI::serialWrite(const std::string & message) try {
     CodebenderccAPI::debugMessage("CodebenderccAPI::serialWrite ended",3);
 } catch (...) {
     error_notify("CodebenderccAPI::serialWrite() threw an unknown exception");
- }
+    notify("disconnect");
+    CodebenderccAPI::disconnect(port);
+}
 
-FB::variant CodebenderccAPI::disconnect() try {
+FB::variant CodebenderccAPI::disconnect(const std::string &port) try {
     CodebenderccAPI::debugMessage("CodebenderccAPI::disconnect",3);
-    if(!(serialPort.isOpen()))
+
+    if(!(serialPort.isOpen())){
+        RemovePortFromList(port);
         return 1;
+    }  
     try{
-        CodebenderccAPI::closePort(false);
-    }catch(...){
-        CodebenderccAPI::debugMessage("CodebenderccAPI::disconnect close port exception",2);
-        error_notify("CodebenderccAPI::disconnect close port threw an unknown exception");
-        return 0;}
+
+        serialPort.close();
+
+    }catch(serial::IOException& IOe){
+
+    CodebenderccAPI::debugMessage(IOe.what(),2);
+    std::string result = "CodebenderccAPI::disconnect - " + boost::lexical_cast<std::string>(IOe.what());
+    error_notify(result);
+    RemovePortFromList(port);
+    return 0;
+    }
+
     CodebenderccAPI::debugMessage("CodebenderccAPI::disconnect ended",3);
+    RemovePortFromList(port);
     return 1;
+
 } catch (...) {
     error_notify("CodebenderccAPI::disconnect() threw an unknown exception");
+    RemovePortFromList(port);
     return 0;
 }
 
 bool CodebenderccAPI::serialRead(const std::string &port,
                                 const std::string &baudrate,
-                                const FB::JSObjectPtr
-                                &callback,
+                                const FB::JSObjectPtr &callback,
                                 const FB::JSObjectPtr &valHandCallback) try {
     CodebenderccAPI::debugMessage("CodebenderccAPI::serialRead",3);
     std::string message = "connecting at ";

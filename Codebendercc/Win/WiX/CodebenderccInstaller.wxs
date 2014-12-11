@@ -1,104 +1,134 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-<?define ProductVersion="1.6.0.8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<?define ProductVersion="1.6.1.0"?>
 <?define CurrentDir = "$(sys.CURRENTDIR)\..\..\..\" ?>
 <?define CustomDir = "$(var.CurrentDir)\plugin\Codebendercc\Win" ?>
-    <Product Id="*" Name="Codebender.cc" Language="1033" Version="$(var.ProductVersion)" Manufacturer="codebender.cc" UpgradeCode="{5ed63a74-511c-5a42-8646-a6b6d982a2d3}">
-    <Package InstallerVersion="200" Compressed="yes" Description="Installer for the Codebendercc plugin" InstallScope="perUser" />
 
-    <Upgrade    Id="{5ed63a74-511c-5a42-8646-a6b6d982a2d3}">
-        <UpgradeVersion Property="OLD_VERSION_FOUND"
-                        Minimum="0.0.1"
-                        IncludeMinimum="yes"
-                        Maximum="$(var.ProductVersion)"
-                        IncludeMaximum="yes"
-                        OnlyDetect="no"
-                        IgnoreRemoveFailure="yes"
-                        MigrateFeatures="yes" />
-    </Upgrade>
+<Product  Id="*"
+          Name="Codebender.cc"
+          Language="1033"
+          Version="$(var.ProductVersion)"
+          Manufacturer="codebender.cc"
+          UpgradeCode="{5ed63a74-511c-5a42-8646-a6b6d982a2d3}">
+  <Package  InstallerVersion="200"
+            Compressed="yes"
+            Description="Installer for the Codebendercc plugin"
+            InstallScope="perUser"/>
 
-    <Property    Id="MSIRESTARTMANAGERCONTROL"
-                Value="Disable" />
+  <Upgrade  Id="{5ed63a74-511c-5a42-8646-a6b6d982a2d3}">
+    <UpgradeVersion  Minimum="$(var.ProductVersion)"
+                     OnlyDetect="yes"
+                     IncludeMinimum="yes"
+                     Property="NEWER_VERSION_DETECTED"/>
+    <UpgradeVersion  Minimum="0.0.1"
+                     OnlyDetect="no"
+                     IncludeMinimum="yes"
+                     Maximum="$(var.ProductVersion)"
+                     IncludeMaximum="no"
+                     Property="OLDER_VERSION_DETECTED"/>
+  </Upgrade>
+  
+  <Property  Id="MSIFASTINSTALL"  Value="1"/>
+  <Property  Id='NEWER_VERSION_DETECTED'  Secure='yes'/>
+  <Property  Id="MSIRESTARTMANAGERCONTROL"  Value="Disable"/>
+  <Property  Id="PromptToCloseProcesses"  Value="chrome,firefox" />
+  <Property  Id="PromptToCloseDisplayNames"  Value="Chrome, Firefox" />
+  <CustomAction  Id='NoDownGrade'  Error='A later version of [ProductName] is already installed.' />
+  <Binary  Id="ClosePromptBinary"  SourceFile="$(var.CustomDir)\closePrompt\ClosePromptCA.CA.dll" />
+  <CustomAction  Id="CloseAppsPrompt"  BinaryKey="ClosePromptBinary"  DllEntry="ClosePrompt"  Return="check" />
 
-    <InstallExecuteSequence>
-        <RemoveExistingProducts After="InstallInitialize" />
-        <InstallExecute After="RemoveExistingProducts" />
-    </InstallExecuteSequence>
+  <InstallExecuteSequence>
+    <LaunchConditions After='AppSearch'/>
+    <Custom Action='NoDownGrade' After='FindRelatedProducts'> <![CDATA[NEWER_VERSION_DETECTED]]></Custom>
+    <Custom Action="CloseAppsPrompt" After="InstallInitialize"> <![CDATA[OLDER_VERSION_DETECTED]]></Custom>
+    <RemoveExistingProducts Before="InstallInitialize" />
+  </InstallExecuteSequence>
 
-    <Media Id="1" Cabinet="Codebendercc.cab" EmbedCab="yes" />
-    <Directory Id="TARGETDIR" Name="SourceDir">
-        <Directory Id="AppDataFolder">
-            <Directory Id="CompanyDir" Name="codebendercc">
-                <Component Id="CompanyDirComp" Guid="*">
-                    <RemoveFolder Id="RemoveCompanyDir" On="uninstall" />
-                    <RegistryValue    Root="HKCU"
-                                    Key="SOFTWARE\codebendercc"
-                                    Name="Uninstall"
-                                    Type="string"
-                                    Value="$(var.ProductVersion)"
-                                    KeyPath="yes" />
-                </Component>
-                <Directory Id="PluginNameDir" Name="Codebendercc">
-                    <Component Id="PluginNameDirComp" Guid="*">
-                        <RemoveFolder Id="RemovePluginNameDir" On="uninstall" />
-                        <RegistryValue    Root="HKCU"
-                                        Key="SOFTWARE\codebendercc\Codebendercc"
-                                        Name="Uninstall"
-                                        Type="string"
-                                        Value="$(var.ProductVersion)"
-                                        KeyPath="yes" />
-                    </Component>
-                    <Directory Id="INSTALLDIR" Name="$(var.ProductVersion)">
-                        <Component Id="InstallDirComp" Guid="{104D10A9-62C4-4122-8BA2-1C4644373DEF}">
-                            <RemoveFolder Id="RemoveInstallDir" On="uninstall" />
-                            <RegistryValue    Root="HKCU"
-                                            Key="SOFTWARE\codebendercc\Codebendercc\$(var.ProductVersion)"
-                                            Name="Uninstall"
-                                            Type="string"
-                                            Value="$(var.ProductVersion)"
-                                            KeyPath="yes" />
-                            <File Id="avrdude.exe" Source="$(var.CustomDir)\plugin_files\avrdude.exe" />
-                            <File Id="libusb0.dll" Source="$(var.CustomDir)\plugin_files\libusb0.dll" />
-                            <File Id="Windows.avrdude.conf" Source="$(var.CustomDir)\plugin_files\Windows.avrdude.conf" />
-                        </Component>
-                    </Directory>
-                </Directory>
-            </Directory>
+  <Media  Id="1"  Cabinet="Codebendercc.cab"  EmbedCab="yes"/>
+
+  <Directory  Id="TARGETDIR"  Name="SourceDir">
+    <Directory  Id="AppDataFolder">
+      <Directory  Id="CompanyDir"  Name="codebendercc">
+        <Component  Id="CompanyDirComp"  Guid="*">
+          <RemoveFolder  Id="RemCompanyDir"  On="uninstall"  Directory="CompanyDir"/>
+          <RegistryValue  Root="HKCU"
+                          Key="SOFTWARE\codebendercc"
+                          Name="Uninstall"
+                          Type="string"
+                          Value="$(var.ProductVersion)"
+                          KeyPath="yes"/>
+          <RemoveRegistryValue  Id="RemRegistryValue"
+                                Name="Uninstall"
+                                Key="SOFTWARE\codebendercc"
+                                Root="HKCU"/>
+       </Component>
+       <Directory  Id="PluginNameDir"  Name="Codebendercc">
+         <Component  Id="PluginNameDirComp"  Guid="*">
+           <RemoveFolder  Id="RemPluginNameDir"  On="uninstall"  Directory="PluginNameDir"/>
+           <RegistryValue   Root="HKCU"
+                            Key="SOFTWARE\codebendercc\Codebendercc"
+                            Name="Uninstall"
+                            Type="string"
+                            Value="$(var.ProductVersion)"
+                            KeyPath="yes"/>
+          </Component>
+          <Directory  Id="INSTALLDIR"  Name="$(var.ProductVersion)">
+            <Component  Id="InstallDirComp"  Guid="{104D10A9-62C4-4122-8BA2-1C4644373DEF}">
+              <RegistryValue  Root="HKCU"
+                             Key="SOFTWARE\codebendercc\Codebendercc\$(var.ProductVersion)"
+                             Name="Uninstall"
+                             Type="string"
+                             Value="$(var.ProductVersion)"
+                             KeyPath="yes"/>
+              <File  Id="avrdude.exe"  Source="$(var.CustomDir)\plugin_files\avrdude.exe"/>
+              <File  Id="libusb0.dll"  Source="$(var.CustomDir)\plugin_files\libusb0.dll"/>
+              <File  Id="Windows.avrdude.conf"  Source="$(var.CustomDir)\plugin_files\Windows.avrdude.conf"/>
+              <RemoveFile  Id="RemAllFiles"  Name="*.*"  On="uninstall"/>
+              <RemoveFolder  Id="RemInstallDirComp"  On="uninstall"  Directory="INSTALLDIR"/>
+            </Component>
+          </Directory>
         </Directory>
+      </Directory>
     </Directory>
+  </Directory>
 
-    <Feature Id="MainPluginFeature" Title="Codebender.cc" Level="1">
-        <ComponentRef Id="InstallDirComp"/>
-        <ComponentRef Id="PluginNameDirComp"/>
-        <ComponentRef Id="CompanyDirComp"/>
-        <ComponentGroupRef Id="PluginDLLGroup"/>
-    </Feature>
+  <Feature  Id="MainPluginFeature"  Title="Codebender.cc"  Level="1">
+    <ComponentRef Id="InstallDirComp"/>
+    <ComponentRef Id="PluginNameDirComp"/>
+    <ComponentRef Id="CompanyDirComp"/>
+    <ComponentGroupRef Id="PluginDLLGroup"/>
+  </Feature>
 
-    <WixVariable Id="WixUIBannerBmp" Value="$(var.CustomDir)\img\Banner.bmp" />
-    <WixVariable Id="WixUIDialogBmp" Value="$(var.CustomDir)\img\Dialog.bmp" />
-    <UI Id="WixUI_Minimal">
-        <TextStyle Id="WixUI_Font_Normal" FaceName="Tahoma" Size="8" />
-        <TextStyle Id="WixUI_Font_Bigger" FaceName="Tahoma" Size="12" />
-        <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="9" Bold="yes" />
-        <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
-        <Property Id="WixUI_Mode" Value="Minimal" />
-        <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Congratulations! You have successfully installed the codebender browser plugin. You can now program your Arduino from codebender." />
-        <Property Id="ARPNOMODIFY" Value="1" />
-        <DialogRef Id="UserExit"/>
-        <DialogRef Id="WelcomeDlg"/>
-        <DialogRef Id="ProgressDlg"/>
-        <DialogRef Id="PrepareDlg"/>
-        <DialogRef Id="ErrorDlg"/>
-        <DialogRef Id="FatalError"/>
-        <DialogRef Id="FilesInUse"/>
-        <DialogRef Id="MsiRMFilesInUse"/>
-        <DialogRef Id="PrepareDlg"/>
-        <DialogRef Id="ResumeDlg"/>
-        <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="PrepareDlg">1</Publish>
-        <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
-    </UI>
+  <!-- Adding images to the installer -->
+  <WixVariable  Id="WixUIBannerBmp"  Value="$(var.CustomDir)\img\Banner.bmp"/>
+  <WixVariable  Id="WixUIDialogBmp"  Value="$(var.CustomDir)\img\Dialog.bmp"/>
 
-    <UIRef Id="WixUI_Common" />
+  <UI Id="WixUI_Minimal">
 
-    </Product>
+    <TextStyle  Id="WixUI_Font_Normal"  FaceName="Tahoma"  Size="8"/>
+    <TextStyle  Id="WixUI_Font_Bigger"  FaceName="Tahoma"  Size="12"/>
+    <TextStyle  Id="WixUI_Font_Title"  FaceName="Tahoma"  Size="9"  Bold="yes"/>
+
+    <Property  Id="DefaultUIFont"  Value="WixUI_Font_Normal"/>
+    <Property  Id="WixUI_Mode"  Value="Minimal"/>
+    <Property  Id="WIXUI_EXITDIALOGOPTIONALTEXT"  Value="Congratulations! You have successfully installed the codebender browser plugin. You can now program your Arduino from codebender."/>
+    <Property  Id="ARPNOMODIFY"  Value="1"/>
+
+    <DialogRef  Id="UserExit"/>
+    <DialogRef  Id="ProgressDlg"/>
+    <DialogRef  Id="PrepareDlg"/>
+    <DialogRef  Id="ErrorDlg"/>
+    <DialogRef  Id="FatalError"/>
+    <DialogRef  Id="FilesInUse"/>
+    <DialogRef  Id="MsiRMFilesInUse"/>
+    <DialogRef  Id="PrepareDlg"/>
+    <DialogRef  Id="ResumeDlg"/>
+
+    <Publish  Dialog="ExitDialog"  Control="Finish"  Event="EndDialog"  Value="Return"  Order="999">1</Publish>
+
+  </UI>
+  <UIRef Id="WixUI_Common"/>
+</Product>
+
 </Wix>

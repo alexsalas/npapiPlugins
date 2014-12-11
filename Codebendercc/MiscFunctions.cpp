@@ -414,22 +414,25 @@ int CodebenderccAPI::bootloaderPrefs(const std::string& lFuses,
 
 int CodebenderccAPI::flushBuffer(const std::string& port) try {
 
-     CodebenderccAPI::debugMessage("CodebenderccAPI::flushBuffer",3);
+    CodebenderccAPI::debugMessage("CodebenderccAPI::flushBuffer",3);
+
     int openPortStatus=CodebenderccAPI::openPort(port, 9600, true, "CodebenderccAPI::flushBuffer - ");
+
     if(openPortStatus!=1)
         return openPortStatus;
-     try{
-         serialPort.flushInput();
-         serialPort.flushOutput();
+
+    try{
+        serialPort.flushInput();
+        serialPort.flushOutput();
 
         serialPort.setDTR(false);
         serialPort.setRTS(false);
 
-         delay(100);
+        delay(100);
 
-         serialPort.setDTR(true);
-         serialPort.setRTS(true);
-     }
+        serialPort.setDTR(true);
+        serialPort.setRTS(true);
+    }
     catch(serial::SerialException& se){
         std::string err_msg = boost::lexical_cast<std::string>(se.what());
         std::string result = "flushBuffer exception: " + err_msg;

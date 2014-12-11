@@ -401,18 +401,23 @@ public:
      * Write String to the open serial port.
      * @param the string to write.
      */
-    void serialWrite(const std::string &);
+    void serialWrite(const std::string & message, const std::string &port);
     /**
      * Disconnects from serial port.
      * @return 1 when disconnected. Any other value is an error value. 
      */
-    FB::variant disconnect();
+    FB::variant disconnect(const std::string &port);
     /**
      * Checks for the correct permissions under linux.
      * @param port The port to check for. @see validate_device
      * @return the group needed (if needed) for the user to be added.
      */
     FB::variant checkPermissions(const std::string &port);
+
+    /**
+     * Creates an instance of the serial library and opens for serialReader.
+     **/
+    int connect(const std::string &port, const unsigned int &baudrate);
 
     /**
      * Creates an instance of the serial library and opens it.
