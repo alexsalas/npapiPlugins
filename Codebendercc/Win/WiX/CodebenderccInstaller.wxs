@@ -28,20 +28,20 @@
                      IncludeMaximum="no"
                      Property="OLDER_VERSION_DETECTED"/>
   </Upgrade>
-
+  
+  <Property  Id="MSIFASTINSTALL"  Value="1"/>
   <Property  Id='NEWER_VERSION_DETECTED'  Secure='yes'/>
   <Property  Id="MSIRESTARTMANAGERCONTROL"  Value="Disable"/>
-  <Property Id="PromptToCloseProcesses" Value="chrome,firefox" />
-  <Property Id="PromptToCloseDisplayNames" Value="Chrome, Firefox" />
+  <Property  Id="PromptToCloseProcesses"  Value="chrome,firefox" />
+  <Property  Id="PromptToCloseDisplayNames"  Value="Chrome, Firefox" />
   <CustomAction  Id='NoDownGrade'  Error='A later version of [ProductName] is already installed.' />
-  <Binary Id="ClosePromptBinary" SourceFile="$(var.CustomDir)\closePrompt\ClosePromptCA.CA.dll" />
-  <CustomAction Id="CloseAppsPrompt" BinaryKey="ClosePromptBinary" DllEntry="ClosePrompt" Return="check" />
-
+  <Binary  Id="ClosePromptBinary"  SourceFile="$(var.CustomDir)\closePrompt\ClosePromptCA.CA.dll" />
+  <CustomAction  Id="CloseAppsPrompt"  BinaryKey="ClosePromptBinary"  DllEntry="ClosePrompt"  Return="check" />
 
   <InstallExecuteSequence>
     <LaunchConditions After='AppSearch'/>
     <Custom Action='NoDownGrade' After='FindRelatedProducts'> <![CDATA[NEWER_VERSION_DETECTED]]></Custom>
-    <Custom Action="CloseAppsPrompt" After="InstallInitialize"></Custom>
+    <Custom Action="CloseAppsPrompt" After="InstallInitialize"> <![CDATA[OLDER_VERSION_DETECTED]]></Custom>
     <RemoveExistingProducts Before="InstallInitialize" />
   </InstallExecuteSequence>
 
