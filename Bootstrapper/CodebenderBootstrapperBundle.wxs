@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+	<Bundle Name="Codebender" Version="1.6.1.0" Manufacturer="codebender" UpgradeCode="b624a0e0-17c5-47f6-95e7-4116e06f193f">
+	<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense" >
+        <bal:WixStandardBootstrapperApplication
+             LogoFile="files/codebender.png"
+             ThemeFile="files/ClassicTheme.xml"
+             LocalizationFile="files/ClassicTheme.wxl" 
+			       LicenseUrl="http://opensource.org/licenses/ms-rl"/> 
+    </BootstrapperApplicationRef>
+		<Chain>
+			<MsiPackage SourceFile="msi/Codebendercc.msi" />
+            <MsiPackage SourceFile="msi/Codebendercc64.msi" InstallCondition="VersionNT64" />
+        </Chain>
+	</Bundle>
+</Wix>

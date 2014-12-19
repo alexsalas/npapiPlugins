@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">[WixBundleName] Setup</String>
+  <String Id="Title">[WixBundleName]</String>
+  <String Id="ConfirmCancelMessage">Are you sure you want to cancel?</String>
+
+  <String Id="InstallInstallButton">&amp;Install</String>
+  <String Id="InstallCloseButton">&amp;Close</String>
+  <String Id="InstallHeader">Welcome to [WixBundleName] setup </String>
+  <String Id="InstallMessage">Setup will install [WixBundleName] on your computer. Click "Install" to continue or "Close" to exit.</String>
+  <String Id="InstallVersion">Version [WixBundleVersion]</String>
+
+  <String Id="ProgressHeader">[WixBundleName] operation progress</String>
+  <String Id="ProgressLabel">Processing:</String>
+  <String Id="OverallProgressPackageText">Initializing...</String>
+  <String Id="ProgressCancelButton">&amp;Cancel</String>
+
+  <String Id="ModifyHeader">[WixBundleName] Repair/Uninstall</String>
+  <String Id="ModifyText">Your [WixBundleName] installation will be modified. Click "Repair" to repair installation errors, "Unistall" to remove the program from your computer or "Close" to exit.</String>
+  <String Id="ModifyRepairButton">&amp;Repair</String>
+  <String Id="ModifyUninstallButton">&amp;Uninstall</String>
+  <String Id="ModifyCloseButton">&amp;Close</String>
+
+  <String Id="SuccessHeader">Operation status</String>
+  <String Id="SuccessMessage">The operation finished successfully.</String>
+  <String Id="SuccessLaunchButton">&amp;Launch</String>
+  <String Id="SuccessRestartText">You must restart your computer before you can use the software.</String>
+  <String Id="SuccessRestartButton">&amp;Restart</String>
+  <String Id="SuccessCloseButton">&amp;Close</String>
+
+  <String Id="FailureHeader">The operation failed.</String>
+  <String Id="FailureHyperlinkLogText">One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href="#"&gt;log file&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">You must restart your computer to complete the rollback of the software.</String>
+  <String Id="FailureRestartButton">&amp;Restart</String>
+  <String Id="FailureCloseButton">&amp;Close</String>
+
+</WixLocalization>
